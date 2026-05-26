@@ -1,0 +1,11 @@
+//to use the env file we have to use ->go get github.com/joho/godotenv
+//to install gin we have to use ->go get github.com/gin-gonic/gin
+//to install postgres setup we have to use ->go get github.com/lib/pq
+//to setup .air.toml we have to use ->go get github.com/air-verse/air
+//to setup fiber <->express of nodejs we have to use ->go get github.com/gofiber/fiber/v2
+//to setup cors we have to use ->go get github.com/gofiber/fiber/v2/middleware/cors
+//to setup jwt we have to use ->go get github.com/golang-jwt/jwt/v4
+//to setup postgres ->go get github.com/jackc/pgx/v5
+//to setup bcrypt ->go get golang.org/x/crypto/bcrypt
+//to setup auth2->go get golang.org/x/oauth2
+//to setup google auth->go get golang.org/x/oauth2/google
