@@ -22,5 +22,5 @@ func main() {
 	if err=database.RunMigrations(ctx,db);err!=nil{
 		log.Fatalf("run migrations: %v", err)
 	}
-	log.Panicln("Migrations completed successfully")
+	log.Println("Migrations completed successfully")
 }
