@@ -9,9 +9,10 @@ type User struct{
 	Name string `json:"name"`
 	Email string `json:"email"`
 	Password string `json:"password"`
-	Avatar string `json:"avatar"`
+	AvatarURL string `json:"avatar_url"`
 	Role string `json:"role"`
 	CreatedAt time.Time `json:"created_at"`
+	// UpdatedAt time.Time `json:"updated_at"`
 } 
 //we have to create repository layer
 //repositry interact with database and tehn we create services layer
