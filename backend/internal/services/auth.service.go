@@ -4,10 +4,13 @@ import (
 	"backend/internal/config"
 	"crypto/rand"
 	"encoding/base64"
+	"strings"
+
 	// "encoding/hex"
 	"fmt"
 	"net/http"
 	"time"
+
 	"github.com/gofiber/fiber"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/oauth2"
@@ -79,4 +82,59 @@ func (s *AuthService) SetOauthStateCookie(c fiber.Ctx,value string){
 func (s *AuthService)BuildGoogleAuthUrl(state string) string{
 	//AuthCodeURL created google oauth consent url states value is included it combakc to teh google callback page 
 	return s.oauthConfig.AuthCodeURL(state)
+}
+
+//function for GoogleCallback 
+
+func (s *AuthService) ReadOauthStateCookie(c fiber.Ctx) string{
+	return c.Cookies(oauthStateCookieName,"")
+}
+//func to delete the cookie 
+
+func(s *AuthService)clearOauthStateCookie(c fiber.Ctx){
+	c.Cookie(&fiber.Cookie){
+		Name=oauthStateCookieName,
+		value="",
+		path="/",
+		HTTPOnly:true,
+		Secure: s.config.CookiesSecure,
+		SameSite: s.config.CookiesSameSite,
+		Domain:s.config.CookiesDomain,
+		//expire the cookie in the past for better browser compatability
+		Expires:time.Unix(0,0)
+	}
+}
+//exchabge Google auth code to get out user information from users google 
+func (s *AuthService) ExchangeGoogleAuthCode(ctx context.Context,code string)(*GoogleUserInfo,err){
+
+	token,err:=s.oauthConfig.Exchange(ctx,code)//convert authorisation code into token
+	if err!=nil{
+		return nil,fmt.Errorf("failed to exchange auth code: %w",err)
+	}
+	req,err:=http.NewRequestWithContext(ctx,http.MethodGet,"https://www.google.com/oauth2/v2/userinfo",nil)
+	if err!=nil{
+		return nil,fmt.Errorf("failed to create request for userinfo: %w",err)
+	}
+	
+	req.Header.Set("Authorization","Beared"+token.AccessToken)
+	respone,err:=s.httpClient.Do(req)
+	if err!=nil{
+		return nil,fmt.Errorf("failed to perform userinfo request: %w",err)
+	}
+	// close response body to avoid resource leekages after the reading is done
+	defer respone.Body.Close()
+
+	if response.StatusCode!=http.StatusOK{
+		return nil,fmt.Errorf("google returned non-ok status")
+	}
+	
+	var userInfo GoogleUserInfo
+	if err:=json.NewDecoder(respone.Body).Decode(&userInfo);err!=nil{
+		return nil,fmt.Errorf("failed to decode userinfo response: %w",err)
+	}
+	if strings.TrimSpace(userInfo.Email)==""{
+		return nil,fmt.Errorf("google user email is empty")
+	}
+	//finally return the user info
+	return &userInfo,nil
 }
