@@ -1,0 +1,3 @@
+//this is going  interact with postgres db
+//this is like a controllers of nodejs backend
+//it will contain CRUD operations
