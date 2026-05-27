@@ -6,7 +6,7 @@ services:
 
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: Arbitrum123
       POSTGRES_DB: n8n_saas
 
     ports:

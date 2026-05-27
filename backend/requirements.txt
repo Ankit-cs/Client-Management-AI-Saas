@@ -9,3 +9,4 @@
 //to setup bcrypt ->go get golang.org/x/crypto/bcrypt
 //to setup auth2->go get golang.org/x/oauth2
 //to setup google auth->go get golang.org/x/oauth2/google
+//to run docker ->docker compose up -d
