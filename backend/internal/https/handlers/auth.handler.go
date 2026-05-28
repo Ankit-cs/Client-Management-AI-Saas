@@ -4,6 +4,8 @@ package handlers
 
 import (
 	"backend/internal/config"
+	"backend/internal/https/middlewares"
+	"backend/internal/models"
 	"backend/internal/repositories"
 	"backend/internal/services"
 	"context"
@@ -22,7 +24,7 @@ func NewAuthHandler(config config.Config, authService *services.AuthService, use
 	return &AuthHandler{config: config, authService: authService, userRepo: userRepo}
 }
 ///start google authentications
-func (h *AuthHandler) startGoogleAuth(c fiber.Ctx) error{
+func (h *AuthHandler) StartGoogleAuth(c fiber.Ctx) error{
  state,err:=h.authService.GenerateStateToken()
  if err!=nil{
 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "failed to generate state token"})
@@ -32,7 +34,7 @@ func (h *AuthHandler) startGoogleAuth(c fiber.Ctx) error{
  return  c.Redirect().To(h.authService.BuildGoogleAuthUrl(state))
 }
 //most important is googleCallBack in this when user visit will be check all the authentication and redirects the logic 
-func (h *AuthHandler) googleCallBack(c fiber.Ctx) error{
+func (h *AuthHandler) GoogleAuthCallback(c fiber.Ctx) error{
 	stateFromQuery:=c.Query("state")
 	stateFromCookie:=h.authService.ReadOauthStateCookie(c)
 
@@ -60,7 +62,7 @@ func (h *AuthHandler) googleCallBack(c fiber.Ctx) error{
 	}
 
 	//now we have to check the email exist in database or not and will perform the logic based on it 
-    user,err:=h.userRepo.FindByEmail(context.Background(),repositories.UpsertUserInput{
+    user,err:=h.userRepo.UpsertByEmail(context.Background(),repositories.UpsertUserInput{
 		Email: googleUser.Email,
 		Name:googleUser.Name,
 		AvatarURL: googleUser.Picture,
@@ -72,7 +74,7 @@ func (h *AuthHandler) googleCallBack(c fiber.Ctx) error{
 		})
 	}
 	//generate JWT for the user
-	token,err=h.authService.SignJWT(user)
+	token,err:=h.authService.SignJWT(user)
 	if err!=nil{
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to sign JWT token",
