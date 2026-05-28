@@ -72,7 +72,13 @@ func (h *AuthHandler) googleCallBack(c fiber.Ctx) error{
 		})
 	}
 	//generate JWT for the user
-	
-
-	
+	token,err=h.authService.SignJWT(user)
+	if err!=nil{
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to sign JWT token",
+			"error":err.Error(),
+		})
+	}
+	h.authService.SetAuthCookie(c,token)
+	return c.Redirect().To(h.config.FrontendURL+"/")
 }
