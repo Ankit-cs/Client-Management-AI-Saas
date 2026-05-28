@@ -138,3 +138,37 @@ func (s *AuthService) ExchangeGoogleAuthCode(ctx context.Context,code string)(*G
 	//finally return the user info
 	return &userInfo,nil
 }
+func (s *AuthService) SignJWT(user *models.User)(string,error){
+	expiresAt=time.Now().Add(time.Duration(s.config.JWTExpiresInHours)*time.Hour)
+	claims:=AuthClaims{
+		UserID: user.Id,
+		Email: user.Email,
+		Name: user.Name,
+		RegisteredClaims:jwt.RegisteredClaims{
+			Subject: user.ID,
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
+			IssuedAt:jwt.NewNumericDate(time.Now()),
+			
+		}
+	}
+	toke:=jwt.NewWithClaims(jwt.SigningMethodHS256,claims)
+	signed,err:=token.SignedString([]byte(s.config.JWTSecret))
+	if err!=nil{
+		return "",fmt.Errorf("failed to sign token: %w",err)
+	}
+	return signed,nil
+}
+
+func(s *AuthService)SetAuthCookie(c fiber.Ctx,token string){
+	maxAge:=s.config.JWTExpiresInHours * 60 *60//second
+	c.Cookie(&fiber.Cookie){
+		Name=s.config.AuthCookieName,
+		value=token,
+		path="/",
+		HTTPOnly:true,
+		Secure: s.config.CookiesSecure,
+		SameSite: s.config.CookiesSameSite,
+		Domain:s.config.CookiesDomain,
+		MaxAge:maxAge,
+	}
+}
