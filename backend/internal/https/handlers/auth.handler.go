@@ -8,7 +8,7 @@ import (
 	"backend/internal/services"
 	"context"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 type AuthHandler struct {
@@ -22,7 +22,7 @@ func NewAuthHandler(config config.Config, authService *services.AuthService, use
 	return &AuthHandler{config: config, authService: authService, userRepo: userRepo}
 }
 ///start google authentications
-func (h *AuthHandler) startGoogleAuth(c *fiber.Ctx) error{
+func (h *AuthHandler) startGoogleAuth(c fiber.Ctx) error{
  state,err:=h.authService.GenerateStateToken()
  if err!=nil{
 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": "failed to generate state token"})
@@ -32,7 +32,7 @@ func (h *AuthHandler) startGoogleAuth(c *fiber.Ctx) error{
  return  c.Redirect().To(h.authService.BuildGoogleAuthUrl(state))
 }
 //most important is googleCallBack in this when user visit will be check all the authentication and redirects the logic 
-func (h *AuthHandler) googleCallBack(c *fiber.Ctx) error{
+func (h *AuthHandler) googleCallBack(c fiber.Ctx) error{
 	stateFromQuery:=c.Query("state")
 	stateFromCookie:=h.authService.ReadOauthStateCookie(c)
 
@@ -54,10 +54,11 @@ func (h *AuthHandler) googleCallBack(c *fiber.Ctx) error{
 	googleUser,err:=h.authService.ExchangeGoogleAuthCode(context.Background(),code)
 	if err!=nil{
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
-		"message": "Failed to fetch google user information",
-		"error":err.Error(),
-	})
-	
+			"message": "Failed to fetch google user information",
+			"error":err.Error(),
+		})
+	}
+
 	//now we have to check the email exist in database or not and will perform the logic based on it 
     user,err:=h.userRepo.FindByEmail(context.Background(),repositories.UpsertUserInput{
 		Email: googleUser.Email,
@@ -84,7 +85,7 @@ func (h *AuthHandler) googleCallBack(c *fiber.Ctx) error{
 
 
 // get user infromation 
-func (h *AuthHandler) GetUserInfo(c *fiber.Ctx) error{
+func (h *AuthHandler) GetUserInfo(c fiber.Ctx) error{
 	currentUser,ok:=c.Locals(middlewares.ExtractCurrentUserLocalKey()).(*models.User)
 	if !ok || currentUser ==nil{
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -97,7 +98,7 @@ func (h *AuthHandler) GetUserInfo(c *fiber.Ctx) error{
 
 }
 
-func (h *AuthHandler) Logout(c *fiber.Ctx) error{
+func (h *AuthHandler) Logout(c fiber.Ctx) error{
 	h.authService.ClearAuthCookie(c)
 	return c.JSON(fiber.Map{
 		"message": "Logout successful",
