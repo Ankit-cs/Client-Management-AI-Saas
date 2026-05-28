@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -64,7 +64,7 @@ func (s *AuthService) GenerateStateToken() (string, error) {
    return base64.RawURLEncoding.EncodeToString(buffer), nil//bytes into url safe string 
 
 }
-func (s *AuthService) SetOauthStateCookie(c fiber.Ctx,value string){
+func (s *AuthService) SetOauthStateCookie(c *fiber.Ctx,value string){
 	c.Cookie(&fiber.Cookie{
 		Name: oauthStateCookieName,
 		Value: value,
@@ -86,23 +86,23 @@ func (s *AuthService)BuildGoogleAuthUrl(state string) string{
 
 //function for GoogleCallback 
 
-func (s *AuthService) ReadOauthStateCookie(c fiber.Ctx) string{
+func (s *AuthService) ReadOauthStateCookie(c *fiber.Ctx) string{
 	return c.Cookies(oauthStateCookieName,"")
 }
 //func to delete the cookie 
 
-func(s *AuthService)clearOauthStateCookie(c fiber.Ctx){
-	c.Cookie(&fiber.Cookie){
-		Name=oauthStateCookieName,
-		value="",
-		path="/",
+func(s *AuthService)clearOauthStateCookie(c *fiber.Ctx){
+	c.Cookie(&fiber.Cookie{
+		Name:oauthStateCookieName,
+		Value:"",
+		Path:"/",
 		HTTPOnly:true,
 		Secure: s.config.CookiesSecure,
 		SameSite: s.config.CookiesSameSite,
 		Domain:s.config.CookiesDomain,
 		//expire the cookie in the past for better browser compatability
-		Expires:time.Unix(0,0)
-	}
+		Expires:time.Unix(0,0),
+	})
 }
 //exchabge Google auth code to get out user information from users google 
 func (s *AuthService) ExchangeGoogleAuthCode(ctx context.Context,code string)(*GoogleUserInfo,err){
@@ -159,16 +159,36 @@ func (s *AuthService) SignJWT(user *models.User)(string,error){
 	return signed,nil
 }
 
-func(s *AuthService)SetAuthCookie(c fiber.Ctx,token string){
+func(s *AuthService)SetAuthCookie(c *fiber.Ctx,token string){
 	maxAge:=s.config.JWTExpiresInHours * 60 *60//second
-	c.Cookie(&fiber.Cookie){
-		Name=s.config.AuthCookieName,
-		value=token,
-		path="/",
+	c.Cookie(&fiber.Cookie{
+		Name:s.config.AuthCookieName,
+		Value:token,
+		Path:"/",
 		HTTPOnly:true,
 		Secure: s.config.CookiesSecure,
 		SameSite: s.config.CookiesSameSite,
 		Domain:s.config.CookiesDomain,
 		MaxAge:maxAge,
+	})
+}
+
+func (s *AuthService) ParseToken(tokenString string) (*AuthClaims, error) {
+	token,err:=jwt.ParseWithClaims(tokenString, &AuthClaims{}, func(token *jwt.Token) (any, error) {
+		if _,ok:=token.Method.(*jwt.SigningMethodHMAC);!ok{
+			return nil,fmt.Errorf("unexpected signing method: %v",token.Header["alg"])
+		}
+		return []byte(s.config.JWTSecret),nil
+	})
+	if err!=nil{
+		return nil,fmt.Errorf("failed to parse token: %w",err)
 	}
+	//custom generic claims type into our custom auth claims 	type
+	//and also check if the token is valid or not 
+	claims,ok:=token.Claims.(*AuthClaims)
+	if !ok || !token.Valid{
+		return nil,fmt.Errorf("invalid jwt token")
+	}
+	return claims,nil
+	
 }
