@@ -2,8 +2,11 @@ package services
 
 import (
 	"backend/internal/config"
+	"backend/internal/models"
+	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"strings"
 
 	// "encoding/hex"
@@ -33,12 +36,11 @@ type GoogleUserInfo struct{
 }
 //auth claims for custiom info in jwt
 type AuthClaims struct{
-
 	UserID string `json:"user_id"`
 	Email string `json:"email"`
+	Name  string `json:"name"`
 	Role  string `json:"role"`
 	jwt.RegisteredClaims
-
 }
 const oauthStateCookieName="google_oauth_state"
 
@@ -68,7 +70,7 @@ func (s *AuthService) SetOauthStateCookie(c fiber.Ctx,value string){
 	c.Cookie(&fiber.Cookie{
 		Name: oauthStateCookieName,
 		Value: value,
-		path:"/",
+		Path:"/",
 		Expires: time.Now().Add(10* time.Minute),
 		HTTPOnly: true,
 		Secure: s.config.CookiesSecure,
@@ -91,7 +93,7 @@ func (s *AuthService) ReadOauthStateCookie(c fiber.Ctx) string{
 }
 //func to delete the cookie 
 
-func(s *AuthService)clearOauthStateCookie(c fiber.Ctx){
+func(s *AuthService)ClearOauthStateCookie(c fiber.Ctx){
 	c.Cookie(&fiber.Cookie{
 		Name:oauthStateCookieName,
 		Value:"",
@@ -105,7 +107,7 @@ func(s *AuthService)clearOauthStateCookie(c fiber.Ctx){
 	})
 }
 //exchabge Google auth code to get out user information from users google 
-func (s *AuthService) ExchangeGoogleAuthCode(ctx context.Context,code string)(*GoogleUserInfo,err){
+func (s *AuthService) ExchangeGoogleAuthCode(ctx context.Context,code string)(*GoogleUserInfo,error){
 
 	token,err:=s.oauthConfig.Exchange(ctx,code)//convert authorisation code into token
 	if err!=nil{
@@ -116,20 +118,20 @@ func (s *AuthService) ExchangeGoogleAuthCode(ctx context.Context,code string)(*G
 		return nil,fmt.Errorf("failed to create request for userinfo: %w",err)
 	}
 	
-	req.Header.Set("Authorization","Beared"+token.AccessToken)
-	respone,err:=s.httpClient.Do(req)
+	req.Header.Set("Authorization","Bearer "+token.AccessToken)
+	response,err:=s.httpClient.Do(req)
 	if err!=nil{
 		return nil,fmt.Errorf("failed to perform userinfo request: %w",err)
 	}
 	// close response body to avoid resource leekages after the reading is done
-	defer respone.Body.Close()
+	defer response.Body.Close()
 
 	if response.StatusCode!=http.StatusOK{
 		return nil,fmt.Errorf("google returned non-ok status")
 	}
 	
 	var userInfo GoogleUserInfo
-	if err:=json.NewDecoder(respone.Body).Decode(&userInfo);err!=nil{
+	if err:=json.NewDecoder(response.Body).Decode(&userInfo);err!=nil{
 		return nil,fmt.Errorf("failed to decode userinfo response: %w",err)
 	}
 	if strings.TrimSpace(userInfo.Email)==""{
@@ -139,20 +141,20 @@ func (s *AuthService) ExchangeGoogleAuthCode(ctx context.Context,code string)(*G
 	return &userInfo,nil
 }
 func (s *AuthService) SignJWT(user *models.User)(string,error){
-	expiresAt=time.Now().Add(time.Duration(s.config.JWTExpiresInHours)*time.Hour)
+	expiresAt := time.Now().Add(time.Duration(s.config.JWTExpirationTime)*time.Second)
 	claims:=AuthClaims{
 		UserID: user.Id,
 		Email: user.Email,
 		Name: user.Name,
+		Role: user.Role,
 		RegisteredClaims:jwt.RegisteredClaims{
-			Subject: user.ID,
+			Subject: user.Id,
 			ExpiresAt: jwt.NewNumericDate(expiresAt),
 			IssuedAt:jwt.NewNumericDate(time.Now()),
-			
-		}
+		},
 	}
-	toke:=jwt.NewWithClaims(jwt.SigningMethodHS256,claims)
-	signed,err:=token.SignedString([]byte(s.config.JWTSecret))
+	token:=jwt.NewWithClaims(jwt.SigningMethodHS256,claims)
+	signed,err:=token.SignedString([]byte(s.config.JWTSecretKey))
 	if err!=nil{
 		return "",fmt.Errorf("failed to sign token: %w",err)
 	}
@@ -160,7 +162,7 @@ func (s *AuthService) SignJWT(user *models.User)(string,error){
 }
 
 func(s *AuthService)SetAuthCookie(c fiber.Ctx,token string){
-	maxAge:=s.config.JWTExpiresInHours * 60 *60//second
+	maxAge:=s.config.JWTExpirationTime
 	c.Cookie(&fiber.Cookie{
 		Name:s.config.AuthCookieName,
 		Value:token,
@@ -178,7 +180,7 @@ func (s *AuthService) ParseToken(tokenString string) (*AuthClaims, error) {
 		if _,ok:=token.Method.(*jwt.SigningMethodHMAC);!ok{
 			return nil,fmt.Errorf("unexpected signing method: %v",token.Header["alg"])
 		}
-		return []byte(s.config.JWTSecret),nil
+		return []byte(s.config.JWTSecretKey),nil
 	})
 	if err!=nil{
 		return nil,fmt.Errorf("failed to parse token: %w",err)
@@ -196,7 +198,7 @@ func (s *AuthService) ParseToken(tokenString string) (*AuthClaims, error) {
 func(s *AuthService)ClearAuthCookie(c fiber.Ctx){
 	c.Cookie(&fiber.Cookie{
 		Name:s.config.AuthCookieName,
-		Value:token,
+		Value:"",
 		Path:"/",
 		HTTPOnly:true,
 		Secure: s.config.CookiesSecure,
