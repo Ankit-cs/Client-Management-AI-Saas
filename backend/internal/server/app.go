@@ -7,7 +7,6 @@ import (
 	"backend/internal/https/routes"
 	"backend/internal/repositories"
 	"backend/internal/services"
-	"strings"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
