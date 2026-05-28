@@ -192,3 +192,17 @@ func (s *AuthService) ParseToken(tokenString string) (*AuthClaims, error) {
 	return claims,nil
 	
 }
+
+func(s *AuthService)ClearAuthCookie(c *fiber.Ctx){
+	c.Cookie(&fiber.Cookie{
+		Name:s.config.AuthCookieName,
+		Value:token,
+		Path:"/",
+		HTTPOnly:true,
+		Secure: s.config.CookiesSecure,
+		SameSite: s.config.CookiesSameSite,
+		Domain:s.config.CookiesDomain,
+		MaxAge:-1,
+		Expires:time.Unix(0,0),
+	})
+}
