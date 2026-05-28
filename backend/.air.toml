@@ -3,9 +3,9 @@ temp_dir="tmp"
 env_files=[".env"]
 
 [build]
-cmd="go build -o ./tmp/api.exe ./cmd/api"
-bin="./tmp/api.exe"
-full_bin="./tmp/api.exe"
+cmd="go build -o tmp\\api.exe .\\cmd\\api"
+bin="tmp\\api.exe"
+full_bin="tmp\\api.exe"
 
 
 include_ext=["go","env","sql"]
