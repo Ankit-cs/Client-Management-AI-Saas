@@ -12,19 +12,19 @@ func main (){
 	cfg,err:=config.Load()
 	if err !=nil{
 		log.Fatal("Load config:",err)
-	}``
+	}
 	ctx:=context.Background()
 	db,err:=database.NewPool(ctx,cfg.DatabaseURL)
 	if err !=nil{
-		log.Fatalf("Connected to Database",err)
+		log.Fatalf("Failed to connect to Database: %v", err)
 	}
 	//close the db connection
 	defer db.Close()
 	//create the server  which is the main server
 	app := server.New(cfg, db)
-	log.Printf("Server runnig on https://localhost:%s",cfg.Port)
+	log.Printf("Server runnig on https://localhost:%s",cfg.ServicePort)
 	//listen the port 
-	if err := app.Listen(":"+cfg.Port); err != nil {
+	if err := app.Listen(":"+cfg.ServicePort); err != nil {
 		log.Fatalf("Listen : %v", err)
 	}
 }
