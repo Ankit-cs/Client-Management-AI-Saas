@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -64,7 +64,7 @@ func (s *AuthService) GenerateStateToken() (string, error) {
    return base64.RawURLEncoding.EncodeToString(buffer), nil//bytes into url safe string 
 
 }
-func (s *AuthService) SetOauthStateCookie(c *fiber.Ctx,value string){
+func (s *AuthService) SetOauthStateCookie(c fiber.Ctx,value string){
 	c.Cookie(&fiber.Cookie{
 		Name: oauthStateCookieName,
 		Value: value,
@@ -86,12 +86,12 @@ func (s *AuthService)BuildGoogleAuthUrl(state string) string{
 
 //function for GoogleCallback 
 
-func (s *AuthService) ReadOauthStateCookie(c *fiber.Ctx) string{
+func (s *AuthService) ReadOauthStateCookie(c fiber.Ctx) string{
 	return c.Cookies(oauthStateCookieName,"")
 }
 //func to delete the cookie 
 
-func(s *AuthService)clearOauthStateCookie(c *fiber.Ctx){
+func(s *AuthService)clearOauthStateCookie(c fiber.Ctx){
 	c.Cookie(&fiber.Cookie{
 		Name:oauthStateCookieName,
 		Value:"",
@@ -159,7 +159,7 @@ func (s *AuthService) SignJWT(user *models.User)(string,error){
 	return signed,nil
 }
 
-func(s *AuthService)SetAuthCookie(c *fiber.Ctx,token string){
+func(s *AuthService)SetAuthCookie(c fiber.Ctx,token string){
 	maxAge:=s.config.JWTExpiresInHours * 60 *60//second
 	c.Cookie(&fiber.Cookie{
 		Name:s.config.AuthCookieName,
@@ -193,7 +193,7 @@ func (s *AuthService) ParseToken(tokenString string) (*AuthClaims, error) {
 	
 }
 
-func(s *AuthService)ClearAuthCookie(c *fiber.Ctx){
+func(s *AuthService)ClearAuthCookie(c fiber.Ctx){
 	c.Cookie(&fiber.Cookie{
 		Name:s.config.AuthCookieName,
 		Value:token,
