@@ -8,8 +8,7 @@ import (
 	"backend/internal/services"
 	"context"
 
-	// "github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 )
 
 type AuthHandler struct {
@@ -33,7 +32,7 @@ func (h *AuthHandler) startGoogleAuth(c *fiber.Ctx) error{
  return  c.Redirect().To(h.authService.BuildGoogleAuthUrl(state))
 }
 //most important is googleCallBack in this when user visit will be check all the authentication and redirects the logic 
-func (h *AuthHandler) googleCallBack(c fiber.Ctx) error{
+func (h *AuthHandler) googleCallBack(c *fiber.Ctx) error{
 	stateFromQuery:=c.Query("state")
 	stateFromCookie:=h.authService.ReadOauthStateCookie(c)
 
@@ -81,4 +80,19 @@ func (h *AuthHandler) googleCallBack(c fiber.Ctx) error{
 	}
 	h.authService.SetAuthCookie(c,token)
 	return c.Redirect().To(h.config.FrontendURL+"/")
+}
+
+
+// get user infromation 
+func (h *AuthHandler) GetUserInfo(c *fiber.Ctx) error{
+	currentUser,ok:=c.Locals(middlewares.ExtractCurrentUserLocalKey()).(*models.User)
+	if !ok || currentUser ==nil{
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": "Unauthorized access",
+		})
+	}
+	return c.JSON(fiber.Map{
+		"user":currentUser,
+	})
+	
 }
