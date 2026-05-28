@@ -94,5 +94,13 @@ func (h *AuthHandler) GetUserInfo(c *fiber.Ctx) error{
 	return c.JSON(fiber.Map{
 		"user":currentUser,
 	})
-	
+
+}
+
+func (h *AuthHandler) Logout(c *fiber.Ctx) error{
+	h.authService.ClearAuthCookie(c)
+	return c.JSON(fiber.Map{
+		"message": "Logout successful",
+	})
+	//add cookie  
 }
