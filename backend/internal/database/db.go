@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool" //to establish connection with postgresSql
 )
-
 //global context helps in timeouts and cancellation of database operations and closing any connections
 func NewPool(ctx context.Context, databaseURL string) (*pgxpool.Pool, error) {
 

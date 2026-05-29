@@ -35,7 +35,7 @@ func NewSubmissionHandler(submissionRepo *repositories.SubmissionRepository, n8n
 }
 
 func (h *SubmissionHandler) Create(c fiber.Ctx) error {
-	currentUser, ok := middleware.CurrentUserFromContext(c)
+	currentUser, ok := middlewares.CurrentUserFromContext(c)
 	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Unauthorized",
@@ -65,7 +65,7 @@ func (h *SubmissionHandler) Create(c fiber.Ctx) error {
 	}
 
 	submission, err := h.submissionRepo.Create(context.Background(),
-		services.ReadinessToCreateSubmissionInput(currentUser.ID, form, readiness))
+		services.ReadinessToCreateSubmissionInput(currentUser.Id, form, readiness))
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -79,14 +79,14 @@ func (h *SubmissionHandler) Create(c fiber.Ctx) error {
 }
 
 func (h *SubmissionHandler) ListMine(c fiber.Ctx) error {
-	currentUser, ok := middleware.CurrentUserFromContext(c)
+	currentUser, ok := middlewares.CurrentUserFromContext(c)
 	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Unauthorized",
 		})
 	}
 
-	submissions, err := h.submissionRepo.ListByUserID(context.Background(), currentUser.ID)
+	submissions, err := h.submissionRepo.ListByUserID(context.Background(), currentUser.Id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to load submissions",
@@ -97,14 +97,14 @@ func (h *SubmissionHandler) ListMine(c fiber.Ctx) error {
 }
 
 func (h *SubmissionHandler) GetMineByID(c fiber.Ctx) error {
-	currentUser, ok := middleware.CurrentUserFromContext(c)
+	currentUser, ok := middlewares.CurrentUserFromContext(c)
 	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Unauthorized",
 		})
 	}
 
-	submission, err := h.submissionRepo.FindByIDForUser(context.Background(), c.Params("id"), currentUser.ID)
+	submission, err := h.submissionRepo.FindByIDForUser(context.Background(), c.Params("id"), currentUser.Id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{

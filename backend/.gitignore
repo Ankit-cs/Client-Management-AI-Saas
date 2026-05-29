@@ -19,8 +19,7 @@ vendor/
 # Go workspace
 go.work
 go.work.sum
-go.mod
-go.sum
+
 
 
 # Environment files
