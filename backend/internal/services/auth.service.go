@@ -113,7 +113,7 @@ func (s *AuthService) ExchangeGoogleAuthCode(ctx context.Context,code string)(*G
 	if err!=nil{
 		return nil,fmt.Errorf("failed to exchange auth code: %w",err)
 	}
-	req,err:=http.NewRequestWithContext(ctx,http.MethodGet,"https://www.google.com/oauth2/v2/userinfo",nil)
+	req,err:=http.NewRequestWithContext(ctx,http.MethodGet,"https://www.googleapis.com/oauth2/v2/userinfo",nil)
 	if err!=nil{
 		return nil,fmt.Errorf("failed to create request for userinfo: %w",err)
 	}
