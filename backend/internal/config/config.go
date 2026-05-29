@@ -41,7 +41,7 @@ func Load() (Config, error) {
 		GoogleRedirectURL:  getEnv("GOOGLE_REDIRECT_URL", ""),
 		CookiesDomain:      getEnvAny("COOKIES_DOMAIN", "COOKIE_DOMAIN", ""),
 		CookiesSecure:      getEnvAsBoolAny(false, "COOKIES_SECURE", "COOKIE_SECURE"),
-		CookiesSameSite:    strings.ToLower(getEnvAny("COOKIES_SAMESITE", "COOKIE_SAME_SITE", "Lax")),
+		CookiesSameSite:    getEnvAny("COOKIES_SAMESITE", "COOKIE_SAME_SITE", "Lax"),
 	}
 	if config.AppEnv == "" {
 		return Config{}, fmt.Errorf("APP_ENV is required")
