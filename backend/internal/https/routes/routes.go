@@ -9,6 +9,8 @@ import (
 type RouteDependencies struct{
 	AuthHandler *handlers.AuthHandler
 	AuthMiddleware *middlewares.AuthMiddleware
+	SubmissionHandler      *handlers.SubmissionHandler
+	AdminSubmissionHandler *handlers.AdminSubmissionHandler
 }
 
 func Register(app *fiber.App, deps RouteDependencies){
@@ -17,4 +19,15 @@ func Register(app *fiber.App, deps RouteDependencies){
 	auth.Get("/google/callback",deps.AuthHandler.GoogleAuthCallback)
 	auth.Post("/logout",deps.AuthHandler.Logout)
    auth.Get("/me",deps.AuthMiddleware.RequireAuth(),deps.AuthHandler.GetUserInfo)
+
+	
+	submissions := app.Group("/submissions", deps.AuthMiddleware.RequireAuth())
+	submissions.Post("/", deps.SubmissionHandler.Create)
+	submissions.Get("/", deps.SubmissionHandler.ListMine)
+	submissions.Get("/:id", deps.SubmissionHandler.GetMineByID)
+
+	admin := app.Group("/admin", deps.AuthMiddleware.RequireAuth(), deps.AuthMiddleware.RequireAdmin())
+	admin.Get("/me", deps.AuthHandler.GetUserInfo)
+	admin.Get("/submissions", deps.AdminSubmissionHandler.ListAllSubmissions)
+	admin.Patch("/submissions/:id/status", deps.AdminSubmissionHandler.UpdateStatus)
 }
