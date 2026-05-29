@@ -11,3 +11,4 @@ export type User={
 export type AuthMeResponse={
     user:User;
 };
+
