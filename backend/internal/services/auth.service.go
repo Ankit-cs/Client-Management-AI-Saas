@@ -78,7 +78,6 @@ func (s *AuthService) SetOauthStateCookie(c fiber.Ctx,value string){
 		Domain:s.config.CookiesDomain,
 		MaxAge:20*60,//20 mintue
 	})
-	return 
 }
 
 func (s *AuthService)BuildGoogleAuthUrl(state string) string{
