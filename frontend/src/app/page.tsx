@@ -80,7 +80,7 @@ export default async function Home() {
   const user = await getUserInfo();
   const workspaceHref = user?.role === "admin" ? "/admin" : "/submissions";
   const loginHref = `${publicApiBaseUrl}/auth/google`;
-  const viewProcessHref = user ? workspaceHref : "/";
+  const viewProcessHref = user ? workspaceHref : "/cd b";
 
   return (
     <>
