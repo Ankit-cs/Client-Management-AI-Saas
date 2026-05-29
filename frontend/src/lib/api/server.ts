@@ -14,7 +14,8 @@ export async function serverApifetch<T>(
     const cookieStore=await cookies();
     const cookieHeader=cookieStore.getAll().map((cookie)=>`${cookie.name}=${cookie.value}`).join(';');
 
-    const response=await fetch(`${serverApiBaseUrl}/${path}`,{
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    const response=await fetch(`${serverApiBaseUrl}/${cleanPath}`,{
         ...options,
         cache:'no-store',
         headers:{
