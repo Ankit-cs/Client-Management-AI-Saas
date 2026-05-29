@@ -7,8 +7,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const logoutButtonClass = cn(
-  buttonVariants({ variant: "default", size: "lg" }),
-  "h-10 rounded-none px-6 text-base font-medium shadow-none",
+  "group cursor-pointer relative inline-flex items-center justify-center px-5 text-sm font-medium text-white bg-transparent border-2 border-[#414141] hover:scale-[1.03] hover:border-white transition-all duration-200 h-10 rounded-xl font-inter",
 );
 
 function LogoutButton() {
