@@ -28,8 +28,8 @@ func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 
 //methods
 func (r *UserRepository) UpsertByEmail(ctx context.Context, input UpsertUserInput) (*models.User, error){
-	var user models.User 
-	query := `INSERT INTO users (email, name, avatar_url,role) VALUES ($1, $2, $3,'admin') ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, avatar_url = EXCLUDED.avatar_url RETURNING id,email,COALESCE(name,''),COALESCE(avatar_url,''),role,created_at`
+	var user models.User //config manage realte to admin and user roles 
+	query := `INSERT INTO users (email, name, avatar_url,role) VALUES ($1, $2, $3,'user') ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, avatar_url = EXCLUDED.avatar_url RETURNING id,email,COALESCE(name,''),COALESCE(avatar_url,''),role,created_at`
 	//scan will  copies returned values into variables into user structs field 
 	err := r.db.QueryRow(ctx, query,strings.TrimSpace(strings.ToLower(input.Email)), strings.TrimSpace(input.Name), strings.TrimSpace(input.AvatarURL)).Scan(&user.Id, &user.Email, &user.Name, &user.AvatarURL, &user.Role, &user.CreatedAt)
 	if err != nil {
