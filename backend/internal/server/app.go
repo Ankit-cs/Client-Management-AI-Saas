@@ -30,14 +30,20 @@ func New(cfg config.Config, db *pgxpool.Pool) *fiber.App {
 
 	// intiate our user repo
 	userRepo := repositories.NewUserRepository(db)
+	submissionRepo:=repositories.NewSubmissionRepository(db)
 	authService := services.NewAuthService(cfg)
+	n8nService:=services.NewN8NService(cfg)
 	// initate handler
 	authHandler := handlers.NewAuthHandler(cfg, authService, userRepo)
+	submissionHandler:=handlers.NewSubmissionHandler(submissionRepo,n8nService)
+	adminSubmissionHandler:=handlers.NewAdminSubmissionHandler(submissionRepo)
 	authMiddleware := middlewares.NewAuthMiddleware(cfg, authService, userRepo)
 
 	routes.Register(app, routes.RouteDependencies{
 		AuthHandler:    authHandler,
 		AuthMiddleware: authMiddleware,
+		SubmissionHandler: submissionHandler,
+		AdminSubmissionHandler: adminSubmissionHandler,
 	})
 
 	return app
