@@ -23,6 +23,8 @@ type Config struct {
 	CookiesDomain      string
 	CookiesSecure      bool
 	CookiesSameSite    string
+	N8NWebhookURL      string
+
 }
 
 func Load() (Config, error) {
@@ -42,6 +44,7 @@ func Load() (Config, error) {
 		CookiesDomain:      getEnvAny("COOKIES_DOMAIN", "COOKIE_DOMAIN", ""),
 		CookiesSecure:      getEnvAsBoolAny(false, "COOKIES_SECURE", "COOKIE_SECURE"),
 		CookiesSameSite:    getEnvAny("COOKIES_SAMESITE", "COOKIE_SAME_SITE", "Lax"),
+		N8NWebhookURL:      getEnv("N8N_WEBHOOK_URL", ""),
 	}
 	if config.AppEnv == "" {
 		return Config{}, fmt.Errorf("APP_ENV is required")
