@@ -2,6 +2,7 @@
 
 import {
   AdminStatus,
+  CreateSubmissionResponse,
   Submission,
   UpdateSubmissionStatusResponse,
 } from "@/types/submission";
@@ -12,6 +13,7 @@ import AdminStatusBadge from "../shared/admin-status-badge";
 import { formatDate } from "@/lib/utils";
 import { Button } from "../ui/button";
 import SubmissionDetails from "./submission-details-dialog";
+import CreateSubmissionClient from "./create-submission-dialog";
 import { clientApiFetch } from "@/lib/api/client";
 
 const summaryCardClass = "rounded-none border-border shadow-none";
@@ -89,6 +91,10 @@ function AdminSubmissionsClient({
     null,
   );
 
+  function handleCreated(payload: CreateSubmissionResponse) {
+    setSubmissions((current) => [payload.submission, ...current]);
+  }
+
   async function updateStatus(
     currentSubmissionID: string,
     adminStatus: AdminStatus,
@@ -121,7 +127,10 @@ function AdminSubmissionsClient({
   return (
     <main className={mainClass}>
       <section className={pageHeaderClass}>
-        <h1 className={pageTitleClass}>Onboaring Review Queue</h1>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className={pageTitleClass}>Onboaring Review Queue</h1>
+          <CreateSubmissionClient onCreated={handleCreated} />
+        </div>
       </section>
 
       <Card className={tableCardClass}>

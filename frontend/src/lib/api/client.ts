@@ -8,7 +8,8 @@ export async function clientApiFetch<T>(
     path: string,
     init?:RequestInit
 ):Promise<T>{
-    const response=await fetch(`${publicApiBaseUrl}/${path}`,{
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    const response=await fetch(`${publicApiBaseUrl}/${cleanPath}`,{
         ...init,
         credentials:'include',
         headers:{
