@@ -43,6 +43,17 @@ Before running the application, make sure you have the following installed on yo
 
 ## 🛠️ Tech Stack & Key Dependencies
 
+### 💰 Service Costs (Free vs Paid)
+This project is built almost entirely on free and open-source tools, with the exception of the AI provider:
+
+*   **Next.js (Frontend)**: Free & Open Source
+*   **Go & Fiber (Backend)**: Free & Open Source
+*   **PostgreSQL (Database)**: Free & Open Source
+*   **Docker & Docker Compose**: Free & Open Source
+*   **n8n (Workflow Engine)**: Free (Self-Hosted Community Edition)
+*   **Google OAuth (Authentication)**: Free (Up to standard Google Cloud API limits)
+*   **OpenAI API (AI Analysis)**: **Paid** (Pay-as-you-go based on token usage). *Note: You can swap this for a free local AI model like Ollama inside n8n if desired!*
+
 ### 🖥️ Frontend (Next.js Application)
 A modern client-facing portal using TypeScript and CSS frameworks.
 *   **Core Framework**: Next.js 16.2 (App Router)
