@@ -22,9 +22,10 @@ func main (){
 	defer db.Close()
 	//create the server  which is the main server
 	app := server.New(cfg, db)
-	log.Printf("Server runnig on https://localhost:%s",cfg.ServicePort)
+	log.Printf("Server runnig on http://localhost:%s",cfg.ServicePort)
 	//listen the port 
 	if err := app.Listen(":"+cfg.ServicePort); err != nil {
+		// trigger reload
 		log.Fatalf("Listen : %v", err)
 	}
 }
