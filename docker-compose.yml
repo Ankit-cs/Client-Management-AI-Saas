@@ -31,6 +31,20 @@ services:
     volumes:
       - n8n_data:/home/node/.n8n
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: n8n-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - n8n
+    env_file:
+      - ./backend/.env
+
 volumes:
   n8n_saas_data:
   n8n_data:
